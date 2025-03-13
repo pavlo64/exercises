@@ -30,7 +30,6 @@ Converting from strings to numbers can be tricky in certain languages. Now, it's
 def is_valid(isbn):
     isbn = isbn.replace("-","")
     if len(isbn) == 10:
-        #isbn = isbn.upper().replace('X','10')
         if isbn[-1].upper() == 'X':
             isbn = isbn[:-1] + '10'
         if (isbn).isdigit():
@@ -47,6 +46,4 @@ def is_valid(isbn):
                     k -=1
             print(sum % 11)
             return sum % 11 == 0
-
-    
     return False
