@@ -31,7 +31,6 @@ def is_valid(isbn):
     isbn = isbn.replace("-","")
     if len(isbn) != 10:
         return False
-    print (isbn[-1:])
     if (isbn[:-1]).isdigit():
         k = 10
         sum = 0
@@ -41,9 +40,11 @@ def is_valid(isbn):
         if isbn[-1:] == 'X':
             sum += 10
         elif isbn[-1:].isdigit():
-            sum += isbn[-1]
+            sum += int(isbn[-1])
         else: 
             return False
         return sum % 11 == 0
+    else:
+        return False
     
 
