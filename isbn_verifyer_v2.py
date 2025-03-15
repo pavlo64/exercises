@@ -29,20 +29,21 @@ Converting from strings to numbers can be tricky in certain languages. Now, it's
 
 def is_valid(isbn):
     isbn = isbn.replace("-","")
-    if len(isbn) == 10:
-        if (isbn[:-1]).isdigit():
-            k = 10
-            sum = 0
-            if isbn[-1:] == 'X':
-                for i in range(9):
-                    sum += int(isbn[i]) * k
-                    k -=1
-                sum += 10
-            elif isbn[-1:].isdigit():
-                for i in range(10):
-                    sum += int(isbn[i]) * k
-                    k -=1
-            else: 
-                return False
-            return sum % 11 == 0
-    return False
+    if len(isbn) != 10:
+        return False
+    print (isbn[-1:])
+    if (isbn[:-1]).isdigit():
+        k = 10
+        sum = 0
+        for i in range(9):
+            sum += int(isbn[i]) * k
+            k -=1
+        if isbn[-1:] == 'X':
+            sum += 10
+        elif isbn[-1:].isdigit():
+            sum += isbn[-1]
+        else: 
+            return False
+        return sum % 11 == 0
+    
+
