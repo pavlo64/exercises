@@ -1,6 +1,6 @@
 import time
 arr = [5, 3, 6, 2, 10]
-start_time = time.time()
+start_time = int(time.time())
 def findSmallest(arr):
     smallest = arr[0]
     smallest_index = 0 
@@ -17,8 +17,8 @@ def selectionSort(arr):
         smallest = findSmallest(arr)
         newArr.append(arr.pop(smallest)) 
     return newArr 
-
-end_time = time.time()
+# time.sleep(2)
+end_time = int(time.time())
 execution_time = end_time - start_time
 print (selectionSort(arr))
 print(execution_time)
