@@ -34,6 +34,7 @@ def is_valid(isbn):
     if (isbn[:-1]).isdigit():
         k = 10
         sum = 0
+<<<<<<< Updated upstream
         for i in range(9):
             sum += int(isbn[i]) * k
             k -=1
@@ -48,3 +49,18 @@ def is_valid(isbn):
         return False
     
 
+=======
+        if isbn[-1:] == 'X':
+            for i in range(9):
+                sum += int(isbn[i]) * k
+                k -=1
+            sum += 10
+        elif isbn[-1:].isdigit():
+            for i in range(10):
+                sum += int(isbn[i]) * k
+                k -=1
+        else: 
+            return False
+        return sum % 11 == 0
+    
+>>>>>>> Stashed changes
