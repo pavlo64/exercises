@@ -19,3 +19,4 @@ def binary_search(list, item):
 item = 35
 
 print (binary_search(my_list, item))
+print (my_list)
