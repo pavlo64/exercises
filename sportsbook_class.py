@@ -46,7 +46,13 @@ class Player(Sportsbook):
             print(f"Bet is won: ID={self.bet_history[element][0]}, Amount={self.bet_history[element][1]}, Odds={self.bet_history[element][2]} \n Balance={self.balance}")
         else:
             print(f"Bet is lost: ID={self.bet_history[element][0]}, Amount={self.bet_history[element][1]}, Odds={self.bet_history[element][2]} \n Balance={self.balance}")
-player = Player("John", Decimal('100.00'))
-player.place_bet()
-player.mybets()
-player.bet_settelment()
+
+if __name__ == '__main__':
+    player = Player("John", Decimal('100.00'))
+    player.place_bet()
+    player.place_bet()
+    player.place_bet()
+    player.place_bet()
+    player.place_bet()
+    player.mybets()
+    player.bet_settelment()
