@@ -20,16 +20,19 @@ class Player(Sportsbook):
         self.bet_history = bet_history
         self.bet_id = 0
     def place_bet(self):
+        if self.place_bets:
+            amount = Decimal(input('Enter bet amount: '))
+            k = Decimal(round(random.uniform(1, 10), 2))
+            k = k.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-        amount = Decimal(input('Enter bet amount:'))
-        k = Decimal(round(random.uniform(1, 10), 2))
-        k = k.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-        self.bet_id +=1
-        self.balance -= amount
-        new_bet = [self.bet_id, amount, k]
-        self.bet_history.append(new_bet)
+            self.bet_id += 1
+            self.balance -= amount
+            new_bet = [self.bet_id, amount, k]
+            self.bet_history.append(new_bet)
 
-        print(f"Bet placed: ID={self.bet_id}, Amount={amount}, Odds={k} \n Balance={self.balance}" )
+            print(f"Bet placed: ID={self.bet_id}, Amount={amount}, Odds={k} \nBalance={self.balance}")
+        else:
+            print("Betting is not available now.")
 
     def mybets(self):
         print (self.bet_history)
