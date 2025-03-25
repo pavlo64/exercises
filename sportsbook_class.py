@@ -21,7 +21,21 @@ class Player(Sportsbook):
         self.bet_id = 0
     def place_bet(self):
         if self.place_bets:
-            amount = Decimal(input('Enter bet amount: '))
+            while True:
+                amount_str = input('Enter bet amount: ').strip()
+                try:
+                    amount = Decimal(amount_str)  # Convert to Decimal
+                    if amount <= 0:
+                        print("Amount must be greater than 0")
+                        continue
+                    # Ensure max 2 decimal places
+                    amount = amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                    if amount > self.balance:
+                        print("Not enough money to place bet")
+                        return
+                    break  # Valid input, exit loop
+                except:
+                    print("Invalid input. Please enter a valid number")
             k = Decimal(round(random.uniform(1, 10), 2))
             k = k.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
@@ -37,8 +51,11 @@ class Player(Sportsbook):
     def mybets(self):
         print (self.bet_history)
     def bet_settelment(self):
+        bet_id = input('Enter bet id: ')
         bet_is_won = random.choice([True,False])
-        bet_id =input('Enter bet id: ')
+        if int(bet_id) > len(self.bet_history):
+            print("Bet with this ID is not exist")
+            return
         element = binary_search(self.bet_history, bet_id)
         self.bet_history[element].append(bet_is_won)
         if bet_is_won:
@@ -50,9 +67,6 @@ class Player(Sportsbook):
 if __name__ == '__main__':
     player = Player("John", Decimal('100.00'))
     player.place_bet()
-    player.place_bet()
-    player.place_bet()
-    player.place_bet()
-    player.place_bet()
     player.mybets()
     player.bet_settelment()
+    player.mybets()
