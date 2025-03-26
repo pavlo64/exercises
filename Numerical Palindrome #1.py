@@ -12,7 +12,7 @@ Return "Not valid" if the input is not an integer or less than 0.
 """
 
 def palindrome(num):
-    if type(num)!= int or num<0:
+    if type(num)!= int or int(num)<0:
         return 'Not valid'
     num_list = list(str(num))
     k =-1
