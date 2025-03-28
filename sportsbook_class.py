@@ -6,15 +6,49 @@ import binary_search
 class Sportsbook:
     place_bets = True
 
-    def __init__(self, name, url, bet_history=None):
-        if bet_history is None:
-            bet_history: dict = {}
+    def __init__(self, name, url ):
         self.name = name
         self.url = url
-        self.bet_history = bet_history
+        self.bet_history = {}
+        self.players = {}
 
     def __repr__(self):
         return f"{self.name}, Bet History={self.bet_history}"
+
+    def find_bet_by_id(self, bet_id):
+        for player_id, bets in self.bet_history.items():
+            for bet in bets:
+                if str(bet.id) == bet_id:
+                    return bet, player_id
+        return None, None
+
+    def settle_bet(self):
+        bet_id = input('Enter bet id: ')
+        bet, player_id = self.find_bet_by_id(bet_id)
+        if bet is None:
+            print("Bet not found")
+            return
+        print(bet, player_id)
+        bet.is_settled = random.choice([True, False])
+        for id, player in self.players.items():
+                if id == player_id:
+                    if bet.is_settled:
+                        winnings = bet.amount * bet.k
+                        player.balance += winnings
+                        print(f"Bet WON: {bet} \nNew Balance={player.balance}")
+                    else:
+                        print(f"Bet LOST: {bet} \nBalance={player.balance}")
+                return
+
+        print("Player not found")
+
+    def get_player_balance(self, player_id):
+        player = self.bet_history.get(player_id)
+        if player:
+            return player.balance
+        else:
+            print("Player not found!")
+            return None
 
 class Bet:
 
@@ -28,6 +62,7 @@ class Bet:
         return f"ID: {self.id}, Amount: {self.amount}, Odds: {self.k}, Settlement: {self.is_settled}"
 
 
+
 class Player(Sportsbook):
     def __init__(self, name, balance, sportsbook: Sportsbook, bet_history=None):
         if bet_history is None:
@@ -37,25 +72,25 @@ class Player(Sportsbook):
         self.bet_history = bet_history
         self.id = uuid.uuid4()
         sportsbook.bet_history[self.id] = self.bet_history
+        sportsbook.players[self.id] = self
 
     def place_bet(self):
         if self.place_bets:
-            while True:
-                amount_str = input('Enter bet amount: ').strip()
-                try:
-                    amount = Decimal(amount_str)  # Convert to Decimal
-                    if amount <= 0:
-                        print("Amount must be greater than 0")
-                        continue
+            amount_str = input('Enter bet amount: ').strip()
+            try:
+                amount = Decimal(amount_str)  # Convert to Decimal
+                if amount <= 0:
+                    print("Amount must be greater than 0")
+                    return
                     # Ensure max 2 decimal places
-                    amount = amount.quantize(Decimal('0.01'),
+                amount = amount.quantize(Decimal('0.01'),
                                              rounding=ROUND_HALF_UP)
-                    if amount > self.balance:
-                        print("Not enough money to place bet")
-                        return
-                    break  # Valid input, exit loop
-                except:
-                    print("Invalid input. Please enter a valid number")
+                if amount > self.balance:
+                    print("Not enough money to place bet")
+                    return
+            except:
+                print("Invalid input. Please enter a valid number")
+                return
             k = Decimal(round(random.uniform(1, 10), 2))
             k = k.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
@@ -72,30 +107,8 @@ class Player(Sportsbook):
     def mybets(self):
         print(self.bet_history)
 
-    def bet_settelment(self):
-        bet_id = input('Enter bet id: ')
-        bet_is_won = random.choice([True, False])
-        if int(bet_id) > len(self.bet_history):
-            print("Bet with this ID is not exist")
-            return
-        # todo: refactor this
-        bet = None
-        for b in self.bet_history:
-            if b.id == int(bet_id):
-                bet = b
-                break
 
-        bet.is_settled = bet_is_won
-        if bet_is_won:
-            self.balance += bet.amount * bet.k
-            print(
-                f"Bet is won: {bet} \n Balance={self.balance}")
-        else:
-            print(
-                f"Bet is lost: {bet} \n Balance={self.balance}")
-
-
-if __name__ == '__main__':
+if __name__ == '__main__':   # pragma: no cover
     betby = Sportsbook('Betby', 'betby.com')
 
     player1 = Player("John", Decimal('100.00'), betby)
@@ -103,14 +116,9 @@ if __name__ == '__main__':
     print(betby)
 
     player1.place_bet()
-    player2.place_bet()
-    player2.place_bet()
-    player1.place_bet()
-    player1.place_bet()
-    player1.bet_settelment()
-    player2.bet_settelment()
-    print(player1.balance)
-    print(betby)
+
+    betby.settle_bet()
+
 
 
 
