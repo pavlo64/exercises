@@ -62,11 +62,11 @@ def test_betting_disabled(player, mocker, capsys):
 
     assert "Betting is not available now" in captured.out
 
-@pytest.mark.parametrize('settlement',
-                         [(True),
-                          (False)])
+@pytest.mark.parametrize('settlement, expected_balance',
+                         [(True, 115),
+                          (False, 100)])
 
-def test_settle_bet(player,sportsbook, mocker, capsys,settlement):
+def test_settle_bet(player,sportsbook, mocker, capsys,settlement, expected_balance):
     bet = Bet(amount=Decimal('10.00'), k=Decimal('1.5'))
     bet.id = 123
     player.bet_history.append(bet)
@@ -74,16 +74,10 @@ def test_settle_bet(player,sportsbook, mocker, capsys,settlement):
     mocker.patch('builtins.input', return_value=str(bet.id))
     mocker.patch('random.choice', return_value=settlement)
 
-    initial_balance = player.balance
-
     sportsbook.settle_bet()
-    if settlement == True:
-        expected_balance = initial_balance + (bet.amount * bet.k)
-    else:
-        expected_balance = initial_balance
+
     assert player.balance == expected_balance
     assert bet.is_settled is settlement
-
 
 def test_settle_bet_not_found(player,sportsbook, mocker, capsys):
     bet = Bet(amount=Decimal('10.00'), k=Decimal('1.5'))
