@@ -1,5 +1,5 @@
 import pytest
-import uuid
+
 from decimal import Decimal
 from sportsbook_class import Sportsbook, Player, Bet
 
@@ -37,33 +37,19 @@ def test_valid_bet(player,mocker,capsys):
     assert bet.amount == Decimal("50.00")
     assert bet.k == 2.5
 
-
-def test_invalid_bet_input(player, mocker, capsys):
-    mocker.patch('builtins.input', return_value='abc')
-
-    player.place_bet()
-
-    captured = capsys.readouterr()
-
-    assert "Invalid input. Please enter a valid number" in captured.out
-
-def test_negative_amount_bet(player, mocker, capsys):
-    mocker.patch('builtins.input', return_value='-1.00')
+@pytest.mark.parametrize('input_value, expected',
+                         [('abc', "Invalid input. Please enter a valid number"),
+                          ('-1.00', "Amount must be greater than 0"),
+                          ('200.00', "Not enough money to place bet")
+                          ])
+def test_bet_input(player, mocker, capsys, input_value, expected):
+    mocker.patch('builtins.input', return_value=input_value)
 
     player.place_bet()
 
     captured = capsys.readouterr()
 
-    assert "Amount must be greater than 0" in captured.out
-
-def test_amount_bigger_then_balance_bet(player, mocker, capsys):
-    mocker.patch('builtins.input', return_value='200.00')
-
-    player.place_bet()
-
-    captured = capsys.readouterr()
-
-    assert "Not enough money to place bet" in captured.out
+    assert expected in captured.out
 
 def test_betting_disabled(player, mocker, capsys):
     player.place_bets = False
@@ -76,37 +62,28 @@ def test_betting_disabled(player, mocker, capsys):
 
     assert "Betting is not available now" in captured.out
 
-def test_settle_bet_win(player,sportsbook, mocker, capsys):
+@pytest.mark.parametrize('settlement',
+                         [(True),
+                          (False)])
+
+def test_settle_bet(player,sportsbook, mocker, capsys,settlement):
     bet = Bet(amount=Decimal('10.00'), k=Decimal('1.5'))
     bet.id = 123
     player.bet_history.append(bet)
 
     mocker.patch('builtins.input', return_value=str(bet.id))
-    mocker.patch('random.choice', return_value=True)
+    mocker.patch('random.choice', return_value=settlement)
 
     initial_balance = player.balance
 
     sportsbook.settle_bet()
-
-    expected_balance = initial_balance + (bet.amount * bet.k)
+    if settlement == True:
+        expected_balance = initial_balance + (bet.amount * bet.k)
+    else:
+        expected_balance = initial_balance
     assert player.balance == expected_balance
-    assert bet.is_settled is True
+    assert bet.is_settled is settlement
 
-def test_settle_bet_lost(player,sportsbook, mocker, capsys):
-    bet = Bet(amount=Decimal('10.00'), k=Decimal('1.5'))
-    bet.id = 123
-    player.bet_history.append(bet)
-
-    mocker.patch('builtins.input', return_value=str(bet.id))
-    mocker.patch('random.choice', return_value=False)
-
-    initial_balance = player.balance
-
-    sportsbook.settle_bet()
-
-    expected_balance = initial_balance
-    assert player.balance == expected_balance
-    assert bet.is_settled is False
 
 def test_settle_bet_not_found(player,sportsbook, mocker, capsys):
     bet = Bet(amount=Decimal('10.00'), k=Decimal('1.5'))
