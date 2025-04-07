@@ -8,7 +8,7 @@ class Train:
     def __repr__(self):
         return f"Train name = {self.name} \n wagons: {self.wagons} "
 
-    def add_wagon(self, wagon_type: Type[Wagon], *args, **kwargs) -> Wagon:
+    def add_wagon(self, wagon_type, *args, **kwargs) :
         wagon = wagon_type( *args,train=self, **kwargs)
         if not isinstance(wagon, LuggageWagon):
             self.enough_baggage_check()
