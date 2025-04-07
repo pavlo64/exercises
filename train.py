@@ -1,32 +1,35 @@
+from typing import List, Type
+
 
 class Train:
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
         self.wagons =[]
     def __repr__(self):
         return f"Train name = {self.name} \n wagons: {self.wagons} "
 
-    def add_wagon(self, wagon_type, *args, **kwargs):
+    def add_wagon(self, wagon_type: Type[Wagon], *args, **kwargs) -> Wagon:
         wagon = wagon_type( *args,train=self, **kwargs)
         if not isinstance(wagon, LuggageWagon):
             self.enough_baggage_check()
         return wagon
 
-    def all_wagons_type_check(self):
+    def all_wagons_type_check(self) -> bool:
+        required_wagon_types = {Locomotive, SeatedWagon, SleepingWagon, RestaurantWagon, LuggageWagon}
         wagon_types_in_train = {type(wagon) for wagon in self.wagons}
-        return all(wagon_type in wagon_types_in_train for wagon_type in {Locomotive, SeatedWagon, SleepingWagon, RestaurantWagon, LuggageWagon})
+        return required_wagon_types.issubset(wagon_types_in_train)
 
-    def locomotive_check(self):
+    def locomotive_check(self) -> bool:
         return type(self.wagons[0]) == Locomotive
 
-    def train_power_check(self, train_weight=0):
+    def train_power_check(self, train_weight=0) -> bool:
         locomotive = next((wagon for wagon in self.wagons if isinstance(wagon, Locomotive)), None)
         power = locomotive.power
         for wagon in self.wagons:
             train_weight += wagon.weight
         return power < train_weight
 
-    def enough_baggage_check(self, all_passengers = 0, all_baggage = 0):
+    def enough_baggage_check(self, all_passengers: int = 0, all_baggage: int = 0) -> None:
         for wagon in self.wagons:
             if type(wagon) in  {SeatedWagon, SleepingWagon, RestaurantWagon}:
                 all_passengers += wagon.passengers
@@ -35,7 +38,7 @@ class Train:
         if all_passengers > all_baggage:
             self.add_wagon(LuggageWagon)
 
-    def main(self):
+    def main(self) -> None:
 
         if not self.all_wagons_type_check():
             print('Not all wagons type are present')
