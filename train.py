@@ -8,7 +8,8 @@ class Train:
 
     def add_wagon(self, wagon_type, *args, **kwargs):
         wagon = wagon_type( *args,train=self, **kwargs)
-        self.enough_baggage_check()
+        if not isinstance(wagon, LuggageWagon):
+            self.enough_baggage_check()
         return wagon
 
     def all_wagons_type_check(self):
@@ -32,8 +33,7 @@ class Train:
             if type(wagon) == LuggageWagon:
                 all_baggage +=wagon.baggage
         if all_passengers > all_baggage:
-            train.add_wagon(LuggageWagon)
-            self.enough_baggage_check()
+            self.add_wagon(LuggageWagon)
 
     def main(self):
 
@@ -101,7 +101,7 @@ class LuggageWagon(Wagon):
     def __repr__(self):
         return f"Luggage wagon (baggage={self.baggage}, weight={self.weight}) \n"
 
-if __name__=='__main__':
+if __name__=='__main__':  # pragma: no cover
     train = Train("Express")
     train.add_wagon(Locomotive, power=1000)
     train.add_wagon(SeatedWagon,passengers = 40)
