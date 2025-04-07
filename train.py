@@ -19,7 +19,7 @@ class Train:
         return required_wagon_types.issubset(wagon_types_in_train)
 
     def locomotive_check(self) -> bool:
-        return self.wagons[0].isinstance(Locomotive)
+        return isinstance(self.wagons[0], Locomotive)
 
     def train_power_check(self, train_weight: int = 0) -> bool:
         locomotive = next((wagon for wagon in self.wagons if isinstance(wagon, Locomotive)), None)
@@ -30,9 +30,9 @@ class Train:
 
     def enough_baggage_check(self, all_passengers: int = 0, all_baggage: int = 0) -> None:
         for wagon in self.wagons:
-            if type(wagon) in {SeatedWagon, SleepingWagon, RestaurantWagon}:
+            if isinstance(wagon, (SeatedWagon, SleepingWagon, RestaurantWagon)):
                 all_passengers += wagon.passengers
-            if type(wagon) == LuggageWagon:
+            elif isinstance(wagon, LuggageWagon):
                 all_baggage += wagon.baggage
         if all_passengers > all_baggage:
             self.add_wagon(LuggageWagon)
