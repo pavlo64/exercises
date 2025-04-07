@@ -8,7 +8,6 @@ def setup_train():
     train.add_wagon(SeatedWagon, passengers=40)
     train.add_wagon(SleepingWagon, passengers=20)
     train.add_wagon(RestaurantWagon)
-
     return train
 
 def test_train_creation(setup_train):
