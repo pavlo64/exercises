@@ -23,13 +23,14 @@ class Train:
             i+=1
         return f"Train name = {self.name} \nWagons:\n{wagon_list}"
 
-    def create_wagon(self, wagon_type, *args, **kwargs):
-        wagon = wagon_type(*args, **kwargs)
-        return wagon
-
     def add_wagon(self, wagon):
-        self.wagons.append(wagon)
-        self.enough_baggage_check()
+        if len(self.wagons) == 0 and isinstance(wagon, Locomotive):
+            logging.error("Locomotive should be in the beginning")
+        else:
+            self.wagons.append(wagon)
+            logging.info(f"wagon {wagon} added successfully")
+            self.enough_baggage_check()
+
 
     def all_wagons_type_check(self) -> bool:
         required_wagon_types = {Locomotive, SeatedWagon, SleepingWagon, RestaurantWagon, LuggageWagon}
@@ -53,19 +54,23 @@ class Train:
             elif isinstance(wagon, LuggageWagon):
                 all_baggage += wagon.baggage
         if all_passengers > all_baggage:
-            luggage = self.create_wagon(LuggageWagon)
+            luggage = create_wagon(LuggageWagon)
             self.wagons.append(luggage)
 
     def start(self) -> None:
         if not self.all_wagons_type_check():
             logging.info('Not all wagons type are present')
-        if self.train_power_check():
+        elif self.train_power_check():
             logging.info('Not enough power to run train')
-        if not self.locomotive_check():
+        elif not self.locomotive_check():
             logging.info('Locomotive should be at first position in the train')
         else:
             logging.info('Train is ready to go')
 
+
+def create_wagon(wagon_type, *args, **kwargs):
+    wagon = wagon_type(*args, **kwargs)
+    return wagon
 
 class Wagon(ABC):
     def __init__(self, passengers:int, seats:int, weight: int, baggage:int):
@@ -83,7 +88,6 @@ class Wagon(ABC):
     @abstractmethod
     def __repr__(self):
         pass
-
 
 
 class Locomotive(Wagon):
