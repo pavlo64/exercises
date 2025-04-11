@@ -1,7 +1,6 @@
 import random
 from decimal import Decimal, ROUND_HALF_UP
 import uuid
-import binary_search
 
 class Sportsbook:
     place_bets = True
@@ -118,14 +117,3 @@ if __name__ == '__main__':   # pragma: no cover
     player1.place_bet()
 
     betby.settle_bet()
-
-
-
-
-
-
-
-
-
-
-
