@@ -1,5 +1,5 @@
 import pytest
-from train import Train, Locomotive, SleepingWagon, SeatedWagon, RestaurantWagon, LuggageWagon
+from train.main.train import Train, Locomotive, SleepingWagon, SeatedWagon, RestaurantWagon, LuggageWagon
 
 @pytest.fixture
 def setup_train():
