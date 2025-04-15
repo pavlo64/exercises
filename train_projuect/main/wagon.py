@@ -11,17 +11,17 @@ class Wagon(ABC):
         self.passengers = passengers
         self.baggage = baggage
         self.seats = seats
+        if self.passengers > self.seats:
+            raise ValueError(
+                f"Too many passengers: {self.passengers}. Max seats available: {self.seats}"
+            )
 
         logging.info(
             f"Created {self.__class__.__name__} with parameters: "
             f"passengers={self.passengers}, seats={self.seats}, weight={self.weight}, baggage={self.baggage}"
         )
 
-    def validate_passengers(self):
-        if self.passengers > self.seats:
-            raise ValueError(
-                f"Too many passengers: {self.passengers}. Max seats available: {self.seats}"
-            )
+
 
     @abstractmethod
     def __repr__(self):
