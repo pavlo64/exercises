@@ -6,3 +6,4 @@ class SeatedWagon(Wagon):
 
     def __repr__(self):
         return f"Seated wagon (seats={self.seats}, passengers={self.passengers}, weight={self.weight})"
+

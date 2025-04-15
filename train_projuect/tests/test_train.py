@@ -66,10 +66,3 @@ def test_start_unfull_train(caplog, empty_train):
         empty_train.start()
 
     assert 'Not all wagons type are present' in caplog.text
-
-
-
-
-
-
-

@@ -74,4 +74,3 @@ class Train:
 def create_wagon(wagon_type, *args, **kwargs):
     wagon = wagon_type(*args, **kwargs)
     return wagon
-

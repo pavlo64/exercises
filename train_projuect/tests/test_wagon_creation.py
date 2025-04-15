@@ -27,7 +27,3 @@ def test_wagons_without_passengers_creation(wagon_type, seats, luggage):
     assert w1.weight == 20
     assert w1.baggage == luggage
     assert w1.passengers == 0
-
-
-
-
