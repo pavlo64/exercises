@@ -1,5 +1,5 @@
 import pytest
-from train_projuect.main.Locomotive import Locomotive
+from train_project.main.Locomotive import Locomotive
 
 def test_creation_locomotive():
  w1 = Locomotive(200)

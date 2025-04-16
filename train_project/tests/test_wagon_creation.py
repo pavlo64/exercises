@@ -1,7 +1,7 @@
-from train_projuect.main.SeatedWagon import SeatedWagon
-from train_projuect.main.SleepingWagon import SleepingWagon
-from train_projuect.main.RestaurantWagon import RestaurantWagon
-from train_projuect.main.LuggageWagon import LuggageWagon
+from train_project.main.SeatedWagon import SeatedWagon
+from train_project.main.SleepingWagon import SleepingWagon
+from train_project.main.RestaurantWagon import RestaurantWagon
+from train_project.main.LuggageWagon import LuggageWagon
 import pytest
 
 @pytest.mark.parametrize('wagon_type, seats',

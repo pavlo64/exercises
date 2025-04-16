@@ -1,5 +1,5 @@
 import pytest
-from train_projuect.main.train import Train, Locomotive, SleepingWagon, SeatedWagon, RestaurantWagon, LuggageWagon
+from train_project.main.train import Train, Locomotive, SleepingWagon, SeatedWagon, RestaurantWagon, LuggageWagon
 import logging
 
 def test_add_locomotive_first(caplog, empty_train):
