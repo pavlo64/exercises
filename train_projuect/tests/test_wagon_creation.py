@@ -37,4 +37,3 @@ def test_wagon_more_passengers_then_seats_creation(wagon_type,passengers):
         wagon_type(passengers)
 
     assert 'Too many passengers' in str(exc_info.value)
-    
