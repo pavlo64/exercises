@@ -5,3 +5,4 @@ clean_QA.py
 matching names.py
 substring csv.py
 train_project/venv/
+train_project/main/.env
