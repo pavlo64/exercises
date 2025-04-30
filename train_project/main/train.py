@@ -4,6 +4,10 @@ from .SeatedWagon import SeatedWagon
 from .SleepingWagon import SleepingWagon
 from .RestaurantWagon import RestaurantWagon
 from .LuggageWagon import LuggageWagon
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +42,9 @@ class Train:
 
     def get_power_required(self, wagon):
         if isinstance(wagon, (SeatedWagon, SleepingWagon)):
-            return 40
+            return int(os.getenv('seated_wagon_needed_power'))
         else:
-            return 20
+            return int(os.getenv('wagon_needed_power'))
 
     def all_wagons_type_check(self) -> bool:
         required_wagon_types = {Locomotive, SeatedWagon, SleepingWagon, RestaurantWagon, LuggageWagon}
