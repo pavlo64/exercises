@@ -7,3 +7,4 @@ substring csv.py
 train_project/venv/
 train_project/main/.env
 fastAPI/__pycache__/main.cpython-313.pyc
+/fastAPI/main/__pycache__

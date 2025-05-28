@@ -1,16 +1,22 @@
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional, Dict
+import uuid
+
+from pydantic.v1 import UUID4
 
 app = FastAPI()
 
 class Brand(BaseModel):
-    id: int
+    brand_id: int
     name: str
 
 class BrandResponse(BaseModel):
     message: str
     brand: Brand
+
+class BrandInput(BaseModel):
+    name: str
 
 brand_storage: Dict[int, str] = {
     1: "Nike",
@@ -46,19 +52,31 @@ async def get_all_brands(
     paginated = items[offset:offset + limit]
     return dict(paginated)
 
-@app.post("/brands",  response_model=BrandResponse)
-async def create_brand(brand: Brand):
-    if brand.id in brand_storage:
-        raise HTTPException(status_code=400, detail="Brand ID already exists")
-    brand_storage[brand.id] = brand.name
-    return {"message": "Brand added", "brand": brand}
-
-@app.put("/brands", response_model=BrandResponse)
-async def update_brand(brand: Brand):
-    if brand.id  not in brand_storage:
+@app.get("/brands/{brand_id}", response_model=Dict[int, str])
+async def get_brand(brand_id:int):
+    if brand_id not in brand_storage:
         raise HTTPException(status_code=404, detail="Brand not found")
-    brand_storage[brand.id] = brand.name
-    return {"message": "Brand updated", "brand": brand}
+    return {brand_id: brand_storage[brand_id]}
+
+@app.post("/brands")
+async def create_brand(brand: BrandInput):
+    if brand.name in brand_storage.values():
+        raise HTTPException(status_code=400, detail="Brand with this name already exists")
+    id = uuid.uuid4().int
+    brand_storage[id] = brand.name
+    return {id}
+
+@app.patch("/brands/{brand_id}", response_model=BrandResponse)
+async def update_brand(brand_id:int, update: BrandInput):
+    if brand_id  not in brand_storage:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    brand_storage[brand_id] = update.name
+    return {"message": "Brand updated",
+            "brand": {
+                         "id": brand_id,
+                         "name": update.name
+                     }
+            }
 
 @app.delete("/brands/{brand_id}", response_model=BrandResponse)
 async def delete_brand(brand_id: int):
