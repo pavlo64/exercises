@@ -11,6 +11,4 @@ APIproject/__pycache__/main.cpython-313.pyc
 __pycache__
 *.env
 APIproject/main/__pycache__/main.cpython-313.pyc
-/APIproject/main/__pycache__
-.coverage
 .coverage
