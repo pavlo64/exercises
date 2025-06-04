@@ -8,7 +8,8 @@ train_project/venv/
 train_project/main/.env
 APIproject/__pycache__/main.cpython-313.pyc
 /APIproject/main/__pycache__
-__pycache__
+__pycache__/
 *.env
+*.pyc
 APIproject/main/__pycache__/main.cpython-313.pyc
 .coverage
