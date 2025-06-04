@@ -20,13 +20,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     train = Train("Express")
-    w1 = Locomotive(200)
-    w2 = SleepingWagon(60)
-    w3 = SeatedWagon(20)
-    w4 = RestaurantWagon()
-    train.add_wagon(w1)
-    train.add_wagon(w2)
-    train.add_wagon(w3)
-    train.add_wagon(w4)
+    w1 = Locomotive(5)
+    print (w1)
 
 main()
