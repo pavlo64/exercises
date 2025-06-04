@@ -6,5 +6,11 @@ matching names.py
 substring csv.py
 train_project/venv/
 train_project/main/.env
-fastAPI/__pycache__/main.cpython-313.pyc
-/fastAPI/main/__pycache__
+APIproject/__pycache__/main.cpython-313.pyc
+/APIproject/main/__pycache__
+__pycache__
+*.env
+APIproject/main/__pycache__/main.cpython-313.pyc
+/APIproject/main/__pycache__
+.coverage
+.coverage
