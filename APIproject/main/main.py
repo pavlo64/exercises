@@ -10,6 +10,7 @@ app = FastAPI()
 class SortField(str, Enum):
     name = "name"
     rate = "rate"
+    catalogue = "catalogue"
 
 class SortOrder(str, Enum):
     asc = "asc"
