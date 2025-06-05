@@ -14,3 +14,4 @@ __pycache__/
 APIproject/main/__pycache__/main.cpython-313.pyc
 .coverage
 .idea/
+.coverage

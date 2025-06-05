@@ -2,11 +2,18 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from typing import List
 from .models import Brand
+from enum import Enum
 import uuid
 
 app = FastAPI()
 
+class SortField(str, Enum):
+    name = "name"
+    rate = "rate"
 
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
 
 class BrandResponse(BaseModel):
     message: str
@@ -30,6 +37,31 @@ brand_storage: List[Brand] = [
     Brand(brand_id=5, name="AUDI", rate=8, catalogue="Cars")
 ]
 
+def get_brand_by_id(brand_id: int) -> Brand | None:
+    return next((b for b in brand_storage if b.brand_id == brand_id), None)
+
+
+def filter_brands(
+    name: str | None = None,
+    catalogue: str | None = None,
+    min_rate: int | None = None,
+    max_rate: int | None = None,
+) -> List[Brand]:
+    result = brand_storage
+    if name:
+        result = [b for b in result if b.name.lower() == name.lower()]
+    if catalogue:
+        result = [b for b in result if b.catalogue.lower() == catalogue.lower()]
+    if min_rate is not None:
+        result = [b for b in result if b.rate >= min_rate]
+    if max_rate is not None:
+        result = [b for b in result if b.rate <= max_rate]
+    return result
+
+def sort_brands(brands: List[Brand], sort_by: SortField, sort_order: SortOrder) -> List[Brand]:
+    reverse = sort_order == SortOrder.desc
+    return sorted(brands, key=lambda b: getattr(b, sort_by), reverse=reverse)
+
 @app.get("/ping")
 def read_root():
     return {"message": "API is working"}
@@ -38,41 +70,30 @@ def read_root():
 async def get_all_brands(
     id: int | None = None,
     name: str | None = None,
-    limit: int = Query(10, ge=1),
-    offset: int = Query(0, ge=0),
     catalogue: str | None = None,
     min_rate: int | None = None,
     max_rate: int | None = None,
-    sort_by: str | None  = Query(None, description="Sort by field: name, rate"),
-    sort_order: str = Query("asc", description="asc or desc"),
-                         ):
-    filtered = brand_storage
+    limit: int = Query(10, ge=1),
+    offset: int = Query(0, ge=0),
+    sort_by: SortField | None = None,
+    sort_order: SortOrder = SortOrder.asc,
+):
     if id is not None:
-        brand = next((b for b in brand_storage if b.brand_id == id), None)
+        brand = get_brand_by_id(id)
         if not brand:
             raise HTTPException(status_code=404, detail="Brand not found")
         return [brand]
-    if name is not None:
-        filtered = [b for b in filtered if b.name.lower() == name.lower()]
-        if not filtered:
-            raise HTTPException(status_code=404, detail="Brand not found")
-    if catalogue:
-        filtered = [b for b in filtered if b.catalogue.lower() == catalogue.lower()]
-    if min_rate is not None:
-        filtered = [b for b in filtered if b.rate >= min_rate]
-    if max_rate is not None:
-        filtered = [b for b in filtered if b.rate <= max_rate]
-    if sort_by in {"name", "rate"}:
-        reverse = sort_order == "desc"
-        filtered = sorted(filtered, key=lambda b: getattr(b, sort_by), reverse=reverse)
-    paginated = filtered[offset:offset + limit]
-    return paginated
+    brands = filter_brands(name, catalogue, min_rate, max_rate)
+    if sort_by:
+        brands = sort_brands(brands, sort_by, sort_order)
+    return brands[offset:offset + limit]
 
 @app.get("/brands/{brand_id}")
 async def get_brand(brand_id:int):
-    if not any(b.brand_id == brand_id for b in brand_storage):
+    brand = get_brand_by_id(brand_id)
+    if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
-    return next((b for b in brand_storage if b.brand_id == brand_id), None)
+    return brand
 
 @app.post("/brands")
 async def create_brand(brandinput: BrandCreate):
