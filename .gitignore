@@ -5,3 +5,22 @@ clean_QA.py
 matching names.py
 substring csv.py
 train_project/venv/
+<<<<<<< Updated upstream
+train_project/main/.env
+APIproject/__pycache__/main.cpython-313.pyc
+/APIproject/main/__pycache__
+__pycache__/
+*.env
+*.pyc
+APIproject/main/__pycache__/main.cpython-313.pyc
+.coverage
+.idea/
+<<<<<<< HEAD
+.coverage
+=======
+=======
+.idea/exercises.iml
+.idea/misc.xml
+
+>>>>>>> Stashed changes
+>>>>>>> 4735e05ffed5dd354c0eb793daf74f732f396e52
