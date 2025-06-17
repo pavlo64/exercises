@@ -1,9 +1,9 @@
 import pytest
-from httpx import AsyncClient
-from httpx import ASGITransport
 from APIproject.main.main import app, brand_storage
-from APIproject.main.models import Brand
+from APIproject.main.models.models import Brand
+from fastapi.testclient import TestClient
 
+client = TestClient(app)
 
 
 brand_payload = {
@@ -19,16 +19,13 @@ existing_brand_payload = {
 
 @pytest.mark.asyncio
 async def test_ping():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.get("/ping")
+    response = client.get("/ping")
     assert response.status_code == 200
     assert response.json() == {"message": "API is working"}
 
+@pytest.mark.asyncio
 async def test_get():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.get("/brands")
+    response = client.get("/brands")
     assert response.status_code == 200
     brands = response.json()
     assert isinstance(brands, list)
@@ -38,13 +35,12 @@ async def test_get():
         assert "rate" in brand and isinstance(brand["rate"], int | None)
         assert "catalogue" in brand and isinstance(brand["catalogue"], str | None)
 
+@pytest.mark.asyncio
 async def test_direct_get():
 
     test_brand = Brand(brand_id=100, name="TestBrand", rate=9, catalogue="TestCategory")
     brand_storage.append(test_brand)
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.get(f"/brands/{test_brand.brand_id}")
+    response = client.get(f"/brands/{test_brand.brand_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["brand_id"] == test_brand.brand_id
@@ -58,30 +54,34 @@ async def test_direct_get():
 async def test_get_nonexistent_brand():
 
     nonexistent_id = 9999
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.get(f"/brands/{nonexistent_id}")
+    response = client.get(f"/brands/{nonexistent_id}")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Brand not found"}
 
+
+@pytest.mark.asyncio
+async def test_filtered_get():
+    response = client.get(f"/brands/?name=Nike")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+
 @pytest.mark.asyncio
 async def test_post():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        get_response1 = await ac.get("/brands")
-        response = await ac.post("/brands", json=brand_payload)
-        get_response2 = await ac.get("/brands")
+
+    get_response1 = client.get("/brands")
+    response = client.post("/brands", json=brand_payload)
+    get_response2 = client.get("/brands")
     assert response.status_code == 200
     assert len(get_response1.json()) + 1 == len (get_response2.json())
 
 @pytest.mark.asyncio
 async def test_existing_brand_post():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        get_response1 = await ac.get("/brands")
-        response = await ac.post("/brands", json=existing_brand_payload)
-        get_response2 = await ac.get("/brands")
+
+    get_response1 = client.get("/brands")
+    response = client.post("/brands", json=existing_brand_payload)
+    get_response2 = client.get("/brands")
     assert response.status_code == 400
     assert response.json() == {"detail": "Brand with this name already exists"}
     assert len(get_response1.json()) == len (get_response2.json())
@@ -90,10 +90,8 @@ async def test_existing_brand_post():
 async def test_patch():
     test_brand = Brand(brand_id=100, name="TestBrand", rate=9, catalogue="TestCategory")
     brand_storage.append(test_brand)
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.patch(f"/brands/{test_brand.brand_id}", json=brand_payload)
-        get_response = await ac.get(f"/brands/{test_brand.brand_id}")
+    response = client.patch(f"/brands/{test_brand.brand_id}", json=brand_payload)
+    get_response = client.get(f"/brands/{test_brand.brand_id}")
     assert response.status_code == 200
     assert get_response.status_code == 200
     data = get_response.json()
@@ -107,9 +105,8 @@ async def test_patch():
 @pytest.mark.asyncio
 async def test_patch_nonexistent_brand():
     nonexistent_id = 9999
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.patch(f"/brands/{nonexistent_id}", json=brand_payload)
+
+    response = client.patch(f"/brands/{nonexistent_id}", json=brand_payload)
     assert response.status_code == 404
     assert response.json() == {"detail": "Brand not found"}
 
@@ -117,20 +114,17 @@ async def test_patch_nonexistent_brand():
 async def test_delete():
     test_brand = Brand(brand_id=100, name="TestBrand", rate=9, catalogue="TestCategory")
     brand_storage.append(test_brand)
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        get_response1 = await ac.get("/brands")
-        response = await ac.delete(f"/brands/{test_brand.brand_id}")
-        get_response2 = await ac.get("/brands")
+
+    get_response1 = client.get("/brands")
+    response = client.delete(f"/brands/{test_brand.brand_id}")
+    get_response2 = client.get("/brands")
     assert response.status_code == 200
     assert len(get_response1.json()) -1 == len(get_response2.json())
 
 @pytest.mark.asyncio
 async def test_delete_nonexistent_brand():
     nonexistent_id = 9999
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.delete(f"/brands/{nonexistent_id}")
+    response = client.delete(f"/brands/{nonexistent_id}")
     assert response.status_code == 404
     assert response.json() == {"detail": "Brand not found"}
 

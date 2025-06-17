@@ -1,41 +1,23 @@
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
 from typing import List
-from .models import Brand
-from enum import Enum
+from .models.models import Brand, Category
+from .models.views import BrandUpdate, BrandCreate, CategoryUpdate
+from .enums.filters import SortField, SortOrder, RateOperation
 import uuid
 
 app = FastAPI()
 
-class SortField(str, Enum):
-    name = "name"
-    rate = "rate"
-    catalogue = "catalogue"
-
-class SortOrder(str, Enum):
-    asc = "asc"
-    desc = "desc"
-
-class BrandResponse(BaseModel):
-    message: str
-    brand: Brand
-
-class BrandCreate(BaseModel):
-    name: str
-    rate: int | None = None
-    catalogue: str | None = None
-
-class BrandUpdate(BaseModel):
-    name: str | None = None
-    rate: int | None = None
-    catalogue: str | None = None
+category_list: List[Category] = [
+    Category(id= 1,name="Sport"),
+    Category(id= 2,name="Cars"),
+]
 
 brand_storage: List[Brand] = [
-    Brand(brand_id=1, name="Nike", rate=9, catalogue="Sportswear"),
-    Brand(brand_id=2, name="Adidas", rate=8, catalogue="Sportswear"),
-    Brand(brand_id=3, name="Puma", rate=7, catalogue="Sportswear"),
-    Brand(brand_id=4, name="BMW", rate=6, catalogue="Cars"),
-    Brand(brand_id=5, name="AUDI", rate=8, catalogue="Cars")
+    Brand(brand_id=1, name="Nike", rate=9, category=1),
+    Brand(brand_id=2, name="Adidas", rate=8, category=1),
+    Brand(brand_id=3, name="Puma", rate=7, category=1),
+    Brand(brand_id=4, name="BMW", rate=6, category=2),
+    Brand(brand_id=5, name="AUDI", rate=8, category=2)
 ]
 
 def get_brand_by_id(brand_id: int) -> Brand | None:
@@ -44,15 +26,11 @@ def get_brand_by_id(brand_id: int) -> Brand | None:
 
 def filter_brands(
     name: str | None = None,
-    catalogue: str | None = None,
     min_rate: int | None = None,
-    max_rate: int | None = None,
-) -> List[Brand]:
+    max_rate: int | None = None) -> List[Brand]:
     result = brand_storage
     if name:
-        result = [b for b in result if b.name.lower() == name.lower()]
-    if catalogue:
-        result = [b for b in result if b.catalogue.lower() == catalogue.lower()]
+        result = [b for b in result if name.lower() in b.name.lower()]
     if min_rate is not None:
         result = [b for b in result if b.rate >= min_rate]
     if max_rate is not None:
@@ -71,7 +49,6 @@ def read_root():
 async def get_all_brands(
     id: int | None = None,
     name: str | None = None,
-    catalogue: str | None = None,
     min_rate: int | None = None,
     max_rate: int | None = None,
     limit: int = Query(10, ge=1),
@@ -84,7 +61,7 @@ async def get_all_brands(
         if not brand:
             raise HTTPException(status_code=404, detail="Brand not found")
         return [brand]
-    brands = filter_brands(name, catalogue, min_rate, max_rate)
+    brands = filter_brands(name, min_rate, max_rate)
     if sort_by:
         brands = sort_brands(brands, sort_by, sort_order)
     return brands[offset:offset + limit]
@@ -100,7 +77,7 @@ async def get_brand(brand_id:int):
 async def create_brand(brandinput: BrandCreate):
     if any(b.name == brandinput.name for b in brand_storage):
         raise HTTPException(status_code=400, detail="Brand with this name already exists")
-    brand = Brand(brand_id = uuid.uuid4().int, name = brandinput.name, rate = brandinput.rate, catalogue=brandinput.catalogue)
+    brand = Brand(brand_id = uuid.uuid4().int, name = brandinput.name, rate = brandinput.rate, category=brandinput.category)
     brand_storage.append(brand)
     return brand.brand_id
 
@@ -111,7 +88,7 @@ async def update_brand(brand_id: int, update: BrandUpdate):
             updated_brand = brand.model_copy(update={
                 "name": update.name if update.name is not None else brand.name,
                 "rate": update.rate if update.rate is not None else brand.rate,
-                "catalogue": update.catalogue if update.catalogue is not None else brand.catalogue
+                "category": update.category if update.category is not None else brand.categorycatalogue
             })
             brand_storage[index] = updated_brand
             return brand.brand_id
@@ -126,3 +103,64 @@ async def delete_brand(brand_id: int):
             return brand.brand_id
 
     raise HTTPException(status_code=404, detail="Brand not found")
+
+@app.patch("/brands/rate/{brand_id}/{operation}")
+async def change_rate(brand_id: int, operation: RateOperation):
+    for index, brand in enumerate(brand_storage):
+        if brand.brand_id == brand_id:
+            current_rate = brand.rate or 0
+
+            if operation == RateOperation.plus:
+                new_rate = current_rate + 1
+            else:
+                new_rate = current_rate - 1
+
+            updated_brand = brand.model_copy(update={
+                "name":  brand.name,
+                "category": brand.category,
+                "rate": new_rate
+            })
+
+            brand_storage[index] = updated_brand
+            return brand.brand_id
+
+    raise HTTPException(status_code=404, detail="Brand not found")
+
+@app.get("/categories", response_model=List[Brand])
+async def get_all_categories():
+    return category_list
+
+@app.get("/categories/{id}")
+async def get_category(id:int):
+    category =  next((b for b in category_list if b.id == id), None)
+    if not category:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    return category
+
+@app.post("/categories")
+async def create_category(categoryinput: Category):
+    if any(b.name == categoryinput.name for b in category_list):
+        raise HTTPException(status_code=400, detail="Category with this name already exists")
+    category = Category(id = uuid.uuid4().int, name = categoryinput.name)
+    category_list.append(category)
+    return category.id
+
+@app.patch("/categories/{id}")
+async def update_category(id: int, update: CategoryUpdate):
+    for index, category in enumerate(category_list):
+        if category.id == id:
+            updated_category = category.model_copy(update={
+                "name": update.name if update.name is not None else category.name,
+            })
+            category_list[index] = updated_category
+            return category.id
+
+    raise HTTPException(status_code=404, detail="Category not found")
+
+@app.delete("/categories/{id}")
+async def delete_category(id: int):
+    for index, category in enumerate(category_list):
+        if category.id == id:
+            category_list.pop(index)
+            return category.id
+    raise HTTPException(status_code=404, detail="Category not found")
