@@ -11,8 +11,3 @@ def health():
 async def digest():
     news = await get_news()
     return {"digest": news}
-
-@router.get("/category")
-async def category():
-    news = await get_news()
-    return {"digest": news}

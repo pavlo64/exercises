@@ -1,8 +1,10 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    NEWS_API_KEY: str
+    news_api_key: str
     BOT_TOKEN: str
+    news_api_url: str
+
 
     class Config:
         env_file = ".env"

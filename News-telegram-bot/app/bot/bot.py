@@ -3,8 +3,8 @@ from aiogram.client.bot import DefaultBotProperties
 from aiogram.types import Message
 from aiogram.filters import CommandStart, Command
 from app.core.config import settings
-from app.bot.dispatcher import handle_telegram_command
-from app.core.config import settings
+from app.services.newsapi_client import NewsAPIClient
+
 
 bot = Bot(
     token=settings.BOT_TOKEN,
@@ -12,18 +12,18 @@ bot = Bot(
 )
 dp = Dispatcher()
 
+newsapi_client = NewsAPIClient()
+
 @dp.message(CommandStart())
 async def start_command(message: Message):
-    await message.answer("👋 Привет! Я бот новостей. Используйте /digest, /category или /help.")
+    await message.answer("👋 Hi! I am news bot. Use /digest or /help.")
 
 @dp.message(Command("digest"))
-@dp.message(Command("category"))
 async def send_news(message: types.Message):
     parts = message.text.split()
-    command = parts[0]  # "/digest" или "/category"
     args = parts[1:] if len(parts) > 1 else []
 
-    news_list = await handle_telegram_command(command, args)
+    news_list = await newsapi_client.get_top_headlines(category = args)
 
     if not news_list:
         await message.answer("❗ Нет новостей.")
@@ -53,9 +53,8 @@ async def send_news(message: types.Message):
 async def help_command(message: types.Message):
     text = (
         "<b>📚 Доступные команды:</b>\n"
-        "/digest — Последние заголовки\n"
-        "/category <code>категория</code> — Новости по категории\n"
-        "/help — Помощь\n\n"
-        "<b>Примеры категорий:</b> business, entertainment, health, science, sports, technology"
+        "/digest — Last news. You can sort them by <code>cateroty</code> \n"
+        "/help — Help\n\n"
+        "<b>Category examples:</b> business, entertainment, health, science, sports, technology"
     )
     await message.answer(text)

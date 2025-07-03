@@ -1,40 +1,31 @@
 from app.services.http_client import BaseAPIClient
 from app.core.config import settings
-import logging
 
-logger = logging.getLogger(__name__)
 
 class NewsAPIClient(BaseAPIClient):
     def __init__(self):
         super().__init__(
             base_url="https://newsapi.org/v2",
-            headers={"X-Api-Key": settings.NEWS_API_KEY}
+            headers={"X-Api-Key": settings.news_api_key}
         )
 
-    async def get_top_headlines(self, country: str = "us", page_size: int = 5):
+    async def get_top_headlines(self, country: str = "us", page_size: int = 5, category: str = "general") -> list:
         data = await self.request(
             endpoint="/top-headlines",
-            params={"country": country, "pageSize": page_size}
+            params={"country": country, "pageSize": page_size, "category": category},
         )
-        return data.get("articles", [])
+        articles =  data.get("articles", [])
+        if not isinstance(articles, list):
+            return "Ошибка: данные не в формате списка статей"
+        for i, a in enumerate(articles):
+            print(f"[{i}] Type: {type(a)}, Value: {a}")
+        return [
+            {
+                "title": a["title"],
+                "description": a.get("description"),
+                "url": a["url"],
+                "image_url": a.get("urlToImage")
+            }
+            for a in articles
+        ]
 
-    async def get_by_category(self, category: str, country: str = "us",page_size: int = 5):
-        try:
-            data = await self.request(
-                endpoint="/top-headlines",
-                params={
-                    "country": country,
-                    "pageSize": page_size,
-                    "category": category,
-                },
-            )
-
-            if isinstance(data, dict) and isinstance(data.get("articles"), list):
-                return data["articles"]
-
-            logger.warning(f"Unexpected response format: {data}")
-            return []
-
-        except Exception as e:
-            logger.error(f"Failed to get news by category '{category}': {e}")
-            return []
