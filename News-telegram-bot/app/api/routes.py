@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from app.services.news import get_news
+from app.services.newsapi_client import NewsAPIClient
 
 router = APIRouter()
+newsapi_client = NewsAPIClient()
 
 @router.get("/health")
 def health():
@@ -9,5 +10,5 @@ def health():
 
 @router.get("/digest")
 async def digest():
-    news = await get_news()
+    news = await newsapi_client.get_top_headlines()
     return {"digest": news}

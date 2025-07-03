@@ -5,7 +5,7 @@ from app.core.config import settings
 class NewsAPIClient(BaseAPIClient):
     def __init__(self):
         super().__init__(
-            base_url="https://newsapi.org/v2",
+            base_url=settings.news_api_url,
             headers={"X-Api-Key": settings.news_api_key}
         )
 

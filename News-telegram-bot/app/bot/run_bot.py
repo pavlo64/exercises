@@ -1,5 +1,4 @@
 import asyncio
-from aiogram import Bot
 from app.bot.bot import bot, dp
 
 async def main():
