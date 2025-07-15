@@ -1,24 +1,26 @@
 from app.services.http_client import BaseAPIClient
 from app.core.config import settings
+from app.schemas.news import Article
+import logging
 import datetime
 from dateutil.relativedelta import relativedelta
 
 one_month_ago = datetime.date.today()- relativedelta(months=1)
 
-async def create_news_list(data):
+async def create_news_list(data) -> list[Article]:
     articles = data.get("articles", [])
     if not isinstance(articles, list):
         return "Ошибка: данные не в формате списка статей"
     for i, a in enumerate(articles):
-        print(f"[{i}] Type: {type(a)}, Value: {a}")
+        logging.debug(f"[{i}] Article received: {a}")
     return [
-        {
-            "title": a["title"],
-            "description": a.get("description"),
-            "url": a["url"],
-            "image_url": a.get("urlToImage")
-        }
-        for a in articles
+        Article(
+            title = a["title"],
+            description = a.get["description"],
+            url = a["url"],
+            image_url = a.get["image_url"],
+        )
+        for a in articles if isinstance(a, dict)
     ]
 class NewsAPIClient(BaseAPIClient):
     def __init__(self):
