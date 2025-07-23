@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram.filters import CommandStart, Command
 from app.core.config import settings
 from app.services.newsapi_client import NewsAPIClient
-from app.models.digest_input import CategoryEnum
+from app.schemas.digest_input import CategoryEnum
 
 bot = Bot(
     token=settings.bot_token,
