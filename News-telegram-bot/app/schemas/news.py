@@ -3,6 +3,6 @@ from typing import Optional
 
 class Article(BaseModel):
     title: str
-    description: Optional[str]
+    description: Optional[str] = None
     url: str
-    image_url: Optional[str]
+    image_url: Optional[str] = None
