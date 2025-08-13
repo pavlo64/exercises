@@ -24,18 +24,27 @@ async def test_search_command_no_results(mock_message, mocker):
 
 
 @pytest.mark.asyncio
-async def test_search_command_with_results(mock_message, mocker):
-    fake_news = [{"title": "Title", "description": "Desc", "url": "https://test.com"}]
+async def test_search_command_with_results(mock_message, mocker, mock_news, mock_user_settings):
+    mock_get_settings = mocker.patch(
+        "app.bot.bot.get_or_create_user_settings",
+        return_value=mock_user_settings
+    )
     mock_search_news = mocker.patch(
         "app.bot.bot.newsapi_client.search_news",
-        return_value=fake_news
+        return_value=mock_news
     )
     mock_send_news = mocker.patch(
         "app.bot.bot.send_news_messages",
         new=AsyncMock()
     )
-
     mock_message.text = "/search bitcoin"
     await search_command(mock_message)
-    mock_search_news.assert_awaited_once_with(q="bitcoin")
-    mock_send_news.assert_awaited_once_with(mock_message, fake_news)
+
+    mock_get_settings.assert_awaited_once_with(mock_message.from_user.id)
+    mock_search_news.assert_awaited_once_with(
+        q="bitcoin",
+        page_size=10,
+        sortBy="publishedAt",
+        time_for_search=24
+    )
+    mock_send_news.assert_awaited_once_with(mock_message, mock_news)

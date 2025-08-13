@@ -7,6 +7,9 @@ os.environ["NEWS_API_URL"] = "http://test.com"
 
 from app.bot.bot import digest_command, send_news_messages
 from app.schemas.digest_input import CategoryEnum
+from app.schemas.news import Article
+
+
 
 
 @pytest.mark.asyncio
@@ -35,25 +38,15 @@ async def test_digest_no_news_found(mock_message, mocker):
     mock_message.answer.assert_awaited_once_with("❗There is no news for you.")
 
 @pytest.mark.asyncio
-async def test_send_news_with_image(mock_message):
-    news = [{
-        "title": "Image Title",
-        "description": "Desc",
-        "url": "https://link.com",
-        "image_url": "https://img.com/image.jpg"
-    }]
-    await send_news_messages(mock_message, news)
+async def test_send_news_with_image(mock_message, mock_news):
+
+    await send_news_messages(mock_message, mock_news)
     mock_message.answer_photo.assert_awaited_once()
     mock_message.answer.assert_not_awaited()
 
 @pytest.mark.asyncio
 async def test_send_news_image_error_fallback_to_answer(mock_message):
-    news = [{
-        "title": "Title",
-        "description": "Desc",
-        "url": "https://url.com",
-        "image_url": "https://img.com/image.jpg"
-    }]
+    news = [Article(title="Image Title", description="Desc", url="https://link.com", image_url=None)]
     mock_message.answer_photo.side_effect = Exception("Network error")
     await send_news_messages(mock_message, news)
     mock_message.answer.assert_awaited_once()
