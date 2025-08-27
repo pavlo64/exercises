@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException, status, Path, Query, Body
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI, HTTPException, status, Depends
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
+from fastapi.security import OAuth2PasswordBearer
 
-JWT_SECRET_KEY = "CHANGE_ME_IN_PROD"
+JWT_SECRET_KEY = "727acad35599f01b292132174eb08ed88a292b3c22f03d358f248d68e9c37eef"
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -24,13 +24,13 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     id: int
 
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    password: Optional[str] = Field(default=None, min_length=8)
-
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+class LoginPayload(BaseModel):
+    email: EmailStr
+    password: str
 
 class TokenPayload(BaseModel):
     sub: str
@@ -75,9 +75,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
         raise cred_exc
     return user
 
-app = FastAPI(title="Users API (in-memory + JWT)", version="1.0.0")
+app = FastAPI(title="Users API", version="1.0.0")
 
-@app.post("/auth/register", response_model=UserOut, status_code=201)
+@app.post("/register", response_model=UserOut, status_code=201)
 async def register(payload: UserCreate):
     global next_user_id
     if get_user_by_email(payload.email):
@@ -92,11 +92,16 @@ async def register(payload: UserCreate):
     next_user_id += 1
     return user
 
-@app.post("/auth/token", response_model=Token)
-async def login(form: OAuth2PasswordRequestForm = Depends()):
-    user = get_user_by_email(form.username)
-    if not user or not verify_password(form.password, user["password_hash"]):
+@app.post("/login", response_model=Token)
+async def login(payload: LoginPayload):
+    user = get_user_by_email(payload.email)
+    if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     token = create_access_token(user_id=user["id"], email=user["email"])
     return {"access_token": token, "token_type": "bearer"}
+
+@app.get("/users", response_model=list[UserOut])
+async def list_users(current_user: dict = Depends(get_current_user)):
+    return [{"id": u["id"], "email": u["email"], "full_name": u["full_name"]} for u in users]
+
 
